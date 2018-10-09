@@ -1,5 +1,6 @@
 package murraco.controller;
 
+import murraco.dto.AdditionalNodeDTO;
 import murraco.model.Note;
 import murraco.model.NoteType;
 import murraco.repository.NoteRepository;
@@ -43,6 +44,16 @@ public class NoteController {
         return null;
     }
 
+    @PostMapping(value = "/additional")
+    public Note addNoteInside(@RequestBody AdditionalNodeDTO notes, HttpServletRequest req) {
+        if(noteRepository.existsByUserAndId(userService.whoami(req), notes.getNote().getId())) {
+            noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()).addNoteInside(notes.getAdditionalNote());
+            noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()));
+            return notes.getAdditionalNote();
+        }
+        return null;
+    }
+
     @GetMapping(value = "/types")
     public List<String> getTypesOfNotes(HttpServletRequest req) {
         List<String> types = new ArrayList<>();
@@ -54,11 +65,19 @@ public class NoteController {
     @PostMapping(value = "/delete")
     public boolean deleteNote(@RequestBody Long id, HttpServletRequest req) {
         if(noteRepository.existsByUserAndId(userService.whoami(req), id)) {
+            removeInsideNotes(id, req);
             userService.whoami(req).getNotes().remove(noteRepository.findByUserAndId(userService.whoami(req), id));
             userService.save(userService.whoami(req));
             return true;
         }
         return false;
+    }
+
+    public void removeInsideNotes(Long id, HttpServletRequest req) {
+        for(Note tempNote : noteRepository.findByUserAndId(userService.whoami(req), id).getNotesInsideOf()) {
+            tempNote.getNotesInside().remove(noteRepository.findByUserAndId(userService.whoami(req), id));
+            noteRepository.save(tempNote);
+        }
     }
 
 }

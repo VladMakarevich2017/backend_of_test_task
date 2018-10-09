@@ -1,8 +1,10 @@
 package murraco.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -19,10 +21,26 @@ public class Note {
     @Enumerated(EnumType.ORDINAL)
     NoteType type;
 
+    @ManyToMany
+    private List<Note> notesInsideOf = new ArrayList<>();
+
+    @ManyToMany
+    private List<Note> notesInside = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
+
+    public void addNoteInside(Note note) {
+        notesInside.add(note);
+        note.getNotesInsideOf().add(this);
+    }
+
+    public void addNoteInsideOf(Note note) {
+        notesInsideOf.add(note);
+        note.getNotesInside().add(this);
+    }
 
     public NoteType getType() {
         return type;
@@ -63,4 +81,21 @@ public class Note {
     public void setName(String name) {
         this.name = name;
     }
+
+    public List<Note> getNotesInsideOf() {
+        return notesInsideOf;
+    }
+
+    public void setNotesInsideOf(List<Note> notesInsideOf) {
+        this.notesInsideOf = notesInsideOf;
+    }
+
+    public List<Note> getNotesInside() {
+        return notesInside;
+    }
+
+    public void setNotesInside(List<Note> notesInside) {
+        this.notesInside = notesInside;
+    }
+
 }
