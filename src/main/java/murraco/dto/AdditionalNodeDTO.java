@@ -8,7 +8,7 @@ public class AdditionalNodeDTO {
     private Note note;
 
     @ApiModelProperty(position = 1)
-    private Note additionalNote;
+    private Long additionalNoteId;
 
     public Note getNote() {
         return note;
@@ -18,11 +18,11 @@ public class AdditionalNodeDTO {
         this.note = note;
     }
 
-    public Note getAdditionalNote() {
-        return additionalNote;
+    public Long getAdditionalNoteId() {
+        return additionalNoteId;
     }
 
-    public void setAdditionalNote(Note additionalNote) {
-        this.additionalNote = additionalNote;
+    public void setAdditionalNoteId(Long additionalNoteId) {
+        this.additionalNoteId = additionalNoteId;
     }
 }

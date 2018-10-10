@@ -64,12 +64,12 @@ public class NoteController {
     public Note addNoteInside(@RequestBody AdditionalNodeDTO notes, HttpServletRequest req) {
         if(noteRepository.existsByUserAndId(userService.whoami(req), notes.getNote().getId())
                 && !noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()).getNotesInside()
-                .contains(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()))) {
+                .contains(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNoteId()))) {
             noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()).addNoteInside(
-                    noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()));
-            noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()));
+                    noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNoteId()));
+            noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNoteId()));
             noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()));
-            return notes.getAdditionalNote();
+            return noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNoteId());
         }
         return null;
     }
@@ -118,7 +118,7 @@ public class NoteController {
     @PostMapping(value = "/delete/inside")
     public boolean deleteInsideNote(@RequestBody AdditionalNodeDTO notes, HttpServletRequest req) {
         if(noteRepository.existsByUserAndId(userService.whoami(req), notes.getNote().getId())
-                && noteRepository.existsByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId())) {
+                && noteRepository.existsByUserAndId(userService.whoami(req), notes.getAdditionalNoteId())) {
             removeLinksInsideNote(notes, req);
             saveNotesAfterRemoving(notes, req);
             return true;
@@ -128,14 +128,14 @@ public class NoteController {
 
     public void removeLinksInsideNote(AdditionalNodeDTO notes, HttpServletRequest req) {
         noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()).getNotesInside()
-                .remove(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()));
-        noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()).getNotesInsideOf()
+                .remove(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNoteId()));
+        noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNoteId()).getNotesInsideOf()
                 .remove(noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()));
     }
 
     public void saveNotesAfterRemoving(AdditionalNodeDTO notes, HttpServletRequest req) {
         noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()));
-        noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()));
+        noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNoteId()));
     }
 
 }
