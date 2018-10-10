@@ -94,8 +94,23 @@ public class NoteController {
     }
 
     public void removeInsideNotes(Long id, HttpServletRequest req) {
+        removeLinks(id, req);
+        clearLinks(id, req);
+    }
+
+    public void removeLinks(Long id, HttpServletRequest req) {
         for(Note tempNote : noteRepository.findByUserAndId(userService.whoami(req), id).getNotesInsideOf()) {
+            if(tempNote.getNotesInsideOf().contains(noteRepository.findByUserAndId(userService.whoami(req), id))) {
+                tempNote.getNotesInsideOf().remove(noteRepository.findByUserAndId(userService.whoami(req), id));
+            }
             tempNote.getNotesInside().remove(noteRepository.findByUserAndId(userService.whoami(req), id));
+            noteRepository.save(tempNote);
+        }
+    }
+
+    public void clearLinks(Long id, HttpServletRequest req) {
+        for(Note tempNote : noteRepository.findByUserAndId(userService.whoami(req), id).getNotesInside()) {
+            tempNote.getNotesInsideOf().remove(noteRepository.findByUserAndId(userService.whoami(req), id));
             noteRepository.save(tempNote);
         }
     }
