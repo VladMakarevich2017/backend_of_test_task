@@ -1,17 +1,20 @@
 package murraco.controller;
 
 import murraco.dto.AdditionalNodeDTO;
+import murraco.dto.NoteResponseDTO;
 import murraco.model.Note;
 import murraco.model.NoteType;
 import murraco.repository.NoteRepository;
 import murraco.service.NoteService;
 import murraco.service.UserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/notes")
@@ -26,9 +29,22 @@ public class NoteController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @GetMapping(value = "/my")
-    public List<Note> getMyNotes(HttpServletRequest req) {
-        return userService.whoami(req).getNotes();
+    public List<NoteResponseDTO> getMyNotes(HttpServletRequest req) {
+        return userService.whoami(req).getNotes().stream()
+                .map(note -> modelMapper.map(note, NoteResponseDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping(value = "/{id}")
+    public NoteResponseDTO getNoteById(@PathVariable("id") Long id, HttpServletRequest req) {
+        if(noteRepository.existsByUserAndId(userService.whoami(req), id)) {
+            return modelMapper.map(noteRepository.findByUserAndId(userService.whoami(req), id), NoteResponseDTO.class);
+        }
+        return null;
     }
 
     @PostMapping(value = "/add")
@@ -46,8 +62,12 @@ public class NoteController {
 
     @PostMapping(value = "/additional")
     public Note addNoteInside(@RequestBody AdditionalNodeDTO notes, HttpServletRequest req) {
-        if(noteRepository.existsByUserAndId(userService.whoami(req), notes.getNote().getId())) {
-            noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()).addNoteInside(notes.getAdditionalNote());
+        if(noteRepository.existsByUserAndId(userService.whoami(req), notes.getNote().getId())
+                && !noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()).getNotesInside()
+                .contains(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()))) {
+            noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()).addNoteInside(
+                    noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()));
+            noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()));
             noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()));
             return notes.getAdditionalNote();
         }
@@ -78,6 +98,29 @@ public class NoteController {
             tempNote.getNotesInside().remove(noteRepository.findByUserAndId(userService.whoami(req), id));
             noteRepository.save(tempNote);
         }
+    }
+
+    @PostMapping(value = "/delete/inside")
+    public boolean deleteInsideNote(@RequestBody AdditionalNodeDTO notes, HttpServletRequest req) {
+        if(noteRepository.existsByUserAndId(userService.whoami(req), notes.getNote().getId())
+                && noteRepository.existsByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId())) {
+            removeLinksInsideNote(notes, req);
+            saveNotesAfterRemoving(notes, req);
+            return true;
+        }
+        return false;
+    }
+
+    public void removeLinksInsideNote(AdditionalNodeDTO notes, HttpServletRequest req) {
+        noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()).getNotesInside()
+                .remove(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()));
+        noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()).getNotesInsideOf()
+                .remove(noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()));
+    }
+
+    public void saveNotesAfterRemoving(AdditionalNodeDTO notes, HttpServletRequest req) {
+        noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getNote().getId()));
+        noteRepository.save(noteRepository.findByUserAndId(userService.whoami(req), notes.getAdditionalNote().getId()));
     }
 
 }

@@ -22,6 +22,7 @@ public class Note {
     NoteType type;
 
     @ManyToMany
+    @JsonIgnore
     private List<Note> notesInsideOf = new ArrayList<>();
 
     @ManyToMany
