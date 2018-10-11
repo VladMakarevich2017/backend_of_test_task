@@ -53,9 +53,9 @@ public class NoteController {
     }
 
     @PostMapping(value = "/update")
-    public Note updateNote(@RequestBody Note note, HttpServletRequest req) {
+    public NoteResponseDTO updateNote(@RequestBody Note note, HttpServletRequest req) {
         if(noteRepository.existsByUserAndId(userService.whoami(req), note.getId())) {
-            return noteService.updateNote(noteRepository.findByUserAndId(userService.whoami(req), note.getId()), note);
+            return modelMapper.map(noteService.updateNote(noteRepository.findByUserAndId(userService.whoami(req), note.getId()), note), NoteResponseDTO.class);
         }
         return null;
     }

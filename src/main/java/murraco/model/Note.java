@@ -26,6 +26,7 @@ public class Note {
     private List<Note> notesInsideOf = new ArrayList<>();
 
     @ManyToMany
+    @JsonIgnore
     private List<Note> notesInside = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
