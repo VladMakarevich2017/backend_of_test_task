@@ -18,8 +18,7 @@ public class Note {
     @Column(columnDefinition="TEXT")
     private String note;
 
-    @Enumerated(EnumType.ORDINAL)
-    NoteType type;
+    private String type;
 
     @ManyToMany
     @JsonIgnore
@@ -44,11 +43,11 @@ public class Note {
         note.getNotesInside().add(this);
     }
 
-    public NoteType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(NoteType type) {
+    public void setType(String type) {
         this.type = type;
     }
 

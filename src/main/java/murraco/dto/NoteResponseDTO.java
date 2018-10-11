@@ -16,7 +16,7 @@ public class NoteResponseDTO {
     @ApiModelProperty(position = 2)
     private String note;
     @ApiModelProperty(position = 3)
-    NoteType type;
+    private String type;
     @ApiModelProperty(position = 4)
     private List<NoteDataDTO> notesInside = new ArrayList<>();
 
@@ -44,11 +44,11 @@ public class NoteResponseDTO {
         this.note = note;
     }
 
-    public NoteType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(NoteType type) {
+    public void setType(String type) {
         this.type = type;
     }
 

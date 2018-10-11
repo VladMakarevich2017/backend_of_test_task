@@ -25,6 +25,9 @@ public class User {
     @Size(min = 4)
     private String password;
 
+    @ElementCollection
+    private List<String> noteTypes = new ArrayList<>();
+
     @ElementCollection(fetch = FetchType.EAGER)
     List<Role> roles;
 
@@ -85,4 +88,11 @@ public class User {
       this.roles = roles;
     }
 
+    public List<String> getNoteTypes() {
+        return noteTypes;
+    }
+
+    public void setNoteTypes(List<String> noteTypes) {
+        this.noteTypes = noteTypes;
+    }
 }

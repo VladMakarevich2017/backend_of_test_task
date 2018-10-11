@@ -39,6 +39,11 @@ public class NoteController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping(value = "/mytypes")
+    public List<String> getMyNoteTypes(HttpServletRequest req) {
+        return userService.whoami(req).getNoteTypes();
+    }
+
     @GetMapping(value = "/{id}")
     public NoteResponseDTO getNoteById(@PathVariable("id") Long id, HttpServletRequest req) {
         if(noteRepository.existsByUserAndId(userService.whoami(req), id)) {
@@ -50,6 +55,16 @@ public class NoteController {
     @PostMapping(value = "/add")
     public Note addNewNote(@RequestBody String type, HttpServletRequest req) {
         return noteService.createNote(userService.whoami(req), type);
+    }
+
+    @PostMapping(value = "/addtype")
+    public String addNewTypeOfNotes(@RequestBody String type, HttpServletRequest req) {
+        if(type != null && type.length() != 0 && !userService.whoami(req).getNoteTypes().contains(type)) {
+            userService.whoami(req).getNoteTypes().add(type);
+            userService.save(userService.whoami(req));
+            return type;
+        }
+        return null;
     }
 
     @PostMapping(value = "/update")

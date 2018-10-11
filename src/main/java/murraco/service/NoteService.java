@@ -20,7 +20,7 @@ public class NoteService {
 
     public Note createNote(User user, String type) {
         Note note = new Note();
-        note.setType(defineNoteType(type));
+        note.setType(type);
         note.setName("New note");
         user.addNote(note);
         noteRepository.save(note);
