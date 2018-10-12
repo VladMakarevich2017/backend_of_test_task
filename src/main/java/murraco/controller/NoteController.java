@@ -2,6 +2,7 @@ package murraco.controller;
 
 import murraco.dto.AdditionalNodeDTO;
 import murraco.dto.NoteResponseDTO;
+import murraco.dto.RenameTypeDTO;
 import murraco.model.Note;
 import murraco.model.NoteType;
 import murraco.repository.NoteRepository;
@@ -57,12 +58,58 @@ public class NoteController {
         return noteService.createNote(userService.whoami(req), type);
     }
 
+    @PostMapping(value = "/checktype")
+    public boolean checkType(@RequestBody String type, HttpServletRequest req) {
+        if(type != null && userService.whoami(req).getNoteTypes().contains(type)) return true;
+        return false;
+    }
+
+    @PostMapping(value = "/delete/type")
+    public boolean removeType(@RequestBody String type, HttpServletRequest req) {
+        if(userService.whoami(req).getNoteTypes().contains(type)) {
+            for(Note note: userService.whoami(req).getNotes()) {
+                if(note.getType().toLowerCase() == type.toLowerCase()) {
+                    deleteNote(note.getId(), req);
+                }
+            }
+            userService.whoami(req).getNoteTypes().remove(type);
+            userService.save(userService.whoami(req));
+            return true;
+        }
+        return false;
+    }
+
+    @PostMapping(value = "/renametype")
+    public List<String> renameType(@RequestBody RenameTypeDTO types, HttpServletRequest req) {
+        List<String> tempList = new ArrayList<>();
+        if(userService.whoami(req).getNoteTypes().contains(types.getOldType())
+                && !userService.whoami(req).getNoteTypes().contains(types.getNewType())) {
+            changeNotesType(types, req);
+            userService.whoami(req).getNoteTypes().set(userService.whoami(req).getNoteTypes().indexOf(types.getOldType()), types.getNewType());
+            userService.save(userService.whoami(req));
+            tempList.add(types.getNewType());
+            return tempList;
+        }
+        return null;
+    }
+
+    public void changeNotesType(RenameTypeDTO types, HttpServletRequest req) {
+        for(Note note: userService.whoami(req).getNotes()) {
+            if(note.getType().toLowerCase().equals(types.getOldType().toLowerCase())) {
+                note.setType(types.getNewType());
+                noteRepository.save(note);
+            }
+        }
+    }
+
     @PostMapping(value = "/addtype")
-    public String addNewTypeOfNotes(@RequestBody String type, HttpServletRequest req) {
+    public List<String> addNewNoteType(@RequestBody String type, HttpServletRequest req) {
+        List<String> tempList = new ArrayList<>();
         if(type != null && type.length() != 0 && !userService.whoami(req).getNoteTypes().contains(type)) {
             userService.whoami(req).getNoteTypes().add(type);
             userService.save(userService.whoami(req));
-            return type;
+            tempList.add(type);
+            return tempList;
         }
         return null;
     }

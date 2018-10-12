@@ -11,7 +11,7 @@ public class NoteDataDTO {
     @ApiModelProperty(position = 2)
     private String note;
     @ApiModelProperty(position = 3)
-    NoteType type;
+    private String type;
 
     public long getId() {
         return id;
@@ -37,11 +37,11 @@ public class NoteDataDTO {
         this.note = note;
     }
 
-    public NoteType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(NoteType type) {
+    public void setType(String type) {
         this.type = type;
     }
 }
